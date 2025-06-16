@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { UserForm } from '../components/forms/UserForm';
-import { MenuView } from '../components/menu/MenuView';
+import { MenuSemanalView, ListaComprasView } from '../components/menu/MenuView';
 
 export const router = createBrowserRouter([
   {
@@ -9,6 +9,10 @@ export const router = createBrowserRouter([
   },
   {
     path: '/menu/:userId',
-    element: <MenuView />,
+    element: <MenuSemanalView />,
+  },
+  {
+    path: '/compras/:userId',
+    element: <ListaComprasView />,
   },
 ]); 
