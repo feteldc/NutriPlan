@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import type { MenuResponse } from '../../types/menu';
@@ -21,6 +21,11 @@ export const MenuSemanalView = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [itemsComprados, setItemsComprados] = useState<Set<number>>(new Set());
+  const navigate = useNavigate();
+
+  const handleCerrarSesion = () => {
+    navigate('/');
+  };
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -89,14 +94,22 @@ export const MenuSemanalView = () => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Tu Plan de Comidas Semanal</h1>
           <p className="text-gray-600">Plan personalizado para alcanzar tus objetivos</p>
-          {userId && (
-            <Link
-              to={`/compras/${userId}`}
-              className="inline-block mt-4 px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+          <div className="flex justify-center gap-4 mt-4">
+            {userId && (
+              <Link
+                to={`/compras/${userId}`}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+              >
+                Ver Lista de Compras Completa
+              </Link>
+            )}
+            <button
+              onClick={handleCerrarSesion}
+              className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
             >
-              Ver Lista de Compras Completa
-            </Link>
-          )}
+              Cerrar Sesión
+            </button>
+          </div>
         </div>
 
         {/* Menú Semanal */}
