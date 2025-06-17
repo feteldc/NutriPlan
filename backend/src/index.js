@@ -82,7 +82,7 @@ app.post('/api/generarMenu/:userId', async (req, res) => {
         cena: "Sopa de verduras con pollo",
         snacks: "Manzana con mantequilla de almendras"
       },
-      miercoles: {
+      miércoles: {
         desayuno: "Smoothie de frutas con proteína",
         almuerzo: "Ensalada César con pollo",
         cena: "Pasta integral con salsa de tomate",
@@ -100,7 +100,7 @@ app.post('/api/generarMenu/:userId', async (req, res) => {
         cena: "Sopa de lentejas",
         snacks: "Fruta fresca"
       },
-      sabado: {
+      sábado: {
         desayuno: "Tostadas con aguacate y huevo",
         almuerzo: "Ensalada de quinoa",
         cena: "Pollo al curry con arroz",
