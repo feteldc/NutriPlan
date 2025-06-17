@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { db } from '../config/firebase.js';
-import { generarMenuSemanal } from '../services/ai.js';
+import { db } from '../config/firebase';
+import { generarMenuSemanal } from '../services/ai';
 
 export const guardarUsuario = async (req: Request, res: Response) => {
   try {

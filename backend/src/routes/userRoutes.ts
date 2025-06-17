@@ -1,7 +1,7 @@
-import express from 'express';
-import { guardarUsuario, generarMenu } from '../controllers/userController.js';
+import { Router } from 'express';
+import { guardarUsuario, generarMenu } from '../controllers/userController';
 
-const router = express.Router();
+const router = Router();
 
 router.post('/guardarUsuario', guardarUsuario);
 router.post('/generarMenu/:userId', generarMenu);
