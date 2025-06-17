@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface UserFormData {
-  nombre: string;
-  edad: number;
-  peso: number;
-  objetivo: string;
-  alergias: string;
-}
+import type { UserFormData } from '../../types/user';
+import { api } from '../../services/api';
 
 export const UserForm = () => {
   const navigate = useNavigate();
@@ -30,37 +24,14 @@ export const UserForm = () => {
     try {
       console.log('Enviando datos:', formData);
       // Guardar usuario
-      const response = await fetch('http://localhost:3000/api/guardarUsuario', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Error al guardar los datos: ${errorData.error || response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('Respuesta del servidor:', data);
+      const { userId } = await api.guardarUsuario(formData);
+      console.log('Usuario guardado con ID:', userId);
       
       // Generar menú
-      const menuResponse = await fetch(`http://localhost:3000/api/generarMenu/${data.userId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!menuResponse.ok) {
-        const errorData = await menuResponse.json();
-        throw new Error(`Error al generar el menú: ${errorData.error || menuResponse.statusText}`);
-      }
+      await api.generarMenu({ userId });
 
       // Redirigir a la vista del menú
-      navigate(`/menu/${data.userId}`);
+      navigate(`/menu/${userId}`);
     } catch (err) {
       console.error('Error completo:', err);
       setError(err instanceof Error ? err.message : 'Error al procesar la solicitud');

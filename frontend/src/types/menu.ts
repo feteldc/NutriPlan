@@ -2,16 +2,20 @@ export interface Comidas {
   desayuno: string;
   almuerzo: string;
   cena: string;
+  snacks: string;
 }
 
 export interface Menu {
-  dias: {
-    [key: string]: Comidas;
-  };
-  listaCompras: string[];
+  lunes: Comidas;
+  martes: Comidas;
+  miércoles: Comidas;
+  jueves: Comidas;
+  viernes: Comidas;
+  sábado: Comidas;
+  domingo: Comidas;
 }
 
 export interface MenuResponse {
   menu: Menu;
-  userId: string;
+  lista_compras: string[];
 } 

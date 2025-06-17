@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import type { MenuResponse } from '../../types/menu';
 
 interface Comidas {
   desayuno: string;
@@ -12,38 +15,43 @@ interface Menu {
   [key: string]: Comidas;
 }
 
-interface MenuResponse {
-  menu: Menu;
-  lista_compras: string[];
-}
-
 export const MenuSemanalView = () => {
   const { userId } = useParams<{ userId: string }>();
   const [menu, setMenu] = useState<MenuResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [itemsComprados, setItemsComprados] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const fetchMenu = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/menu/${userId}`);
-        if (!response.ok) {
-          throw new Error('Error al cargar el menú');
+        if (!userId) {
+          throw new Error('No se proporcionó un ID de usuario');
         }
-        const data = await response.json();
-        setMenu(data);
+
+        const userDoc = await getDoc(doc(db, 'usuarios', userId));
+        if (!userDoc.exists()) {
+          throw new Error('Usuario no encontrado');
+        }
+
+        const userData = userDoc.data();
+        setMenu({
+          menu: userData.menu,
+          lista_compras: userData.lista_compras
+        });
+
+        // Cargar estado de items comprados si existe
+        if (userData.items_comprados) {
+          setItemsComprados(new Set(userData.items_comprados));
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar el menú');
       } finally {
         setIsLoading(false);
       }
     };
-    if (userId) {
-      fetchMenu();
-    } else {
-      setError('No se proporcionó un ID de usuario');
-      setIsLoading(false);
-    }
+
+    fetchMenu();
   }, [userId]);
 
   if (isLoading) {
@@ -56,6 +64,7 @@ export const MenuSemanalView = () => {
       </div>
     );
   }
+
   if (error || !menu || !menu.menu) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
@@ -71,7 +80,9 @@ export const MenuSemanalView = () => {
       </div>
     );
   }
+
   const dias = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4">
       <div className="max-w-3xl mx-auto">
@@ -83,11 +94,13 @@ export const MenuSemanalView = () => {
               to={`/compras/${userId}`}
               className="inline-block mt-4 px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
             >
-              Ver Lista de Compras
+              Ver Lista de Compras Completa
             </Link>
           )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {/* Menú Semanal */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {dias.map((dia) => {
             const comidasDelDia = menu.menu[dia];
             if (!comidasDelDia) return null;
@@ -118,6 +131,27 @@ export const MenuSemanalView = () => {
             );
           })}
         </div>
+
+        {/* Lista de Compras */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Lista de Compras</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {menu.lista_compras.map((item, index) => (
+              <div
+                key={index}
+                className={`p-2 rounded-lg ${
+                  itemsComprados.has(index) ? 'bg-green-50' : 'bg-gray-50'
+                }`}
+              >
+                <span className={`text-gray-700 ${
+                  itemsComprados.has(index) ? 'line-through text-gray-500' : ''
+                }`}>
+                  {item}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -128,29 +162,73 @@ export const ListaComprasView = () => {
   const [menu, setMenu] = useState<MenuResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [itemsComprados, setItemsComprados] = useState<Set<number>>(new Set());
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     const fetchMenu = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/menu/${userId}`);
-        if (!response.ok) {
-          throw new Error('Error al cargar la lista de compras');
+        if (!userId) {
+          throw new Error('No se proporcionó un ID de usuario');
         }
-        const data = await response.json();
-        setMenu(data);
+
+        const userDoc = await getDoc(doc(db, 'usuarios', userId));
+        if (!userDoc.exists()) {
+          throw new Error('Usuario no encontrado');
+        }
+
+        const userData = userDoc.data();
+        setMenu({
+          menu: userData.menu,
+          lista_compras: userData.lista_compras
+        });
+
+        // Cargar estado de items comprados si existe
+        if (userData.items_comprados) {
+          setItemsComprados(new Set(userData.items_comprados));
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar la lista de compras');
       } finally {
         setIsLoading(false);
       }
     };
-    if (userId) {
-      fetchMenu();
-    } else {
-      setError('No se proporcionó un ID de usuario');
-      setIsLoading(false);
-    }
+
+    fetchMenu();
   }, [userId]);
+
+  const handleItemToggle = (index: number) => {
+    const newItemsComprados = new Set(itemsComprados);
+    if (newItemsComprados.has(index)) {
+      newItemsComprados.delete(index);
+    } else {
+      newItemsComprados.add(index);
+    }
+    setItemsComprados(newItemsComprados);
+    setSaveSuccess(false); // Resetear el mensaje de éxito cuando hay cambios
+  };
+
+  const handleSave = async () => {
+    try {
+      if (!userId) return;
+      
+      setIsSaving(true);
+      setError(null);
+      
+      // Guardar en Firestore
+      await updateDoc(doc(db, 'usuarios', userId), {
+        items_comprados: Array.from(itemsComprados)
+      });
+      
+      setSaveSuccess(true);
+    } catch (err) {
+      console.error('Error al guardar:', err);
+      setError('Error al guardar los cambios');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -162,49 +240,78 @@ export const ListaComprasView = () => {
       </div>
     );
   }
-  if (error || !menu || !menu.lista_compras) {
+
+  if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-6 text-center">
-          <div className="text-red-500 mb-4">
-            <svg className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
-          <p className="text-gray-600">{error || 'No se encontró la lista de compras'}</p>
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 text-lg">{error}</p>
         </div>
       </div>
     );
   }
+
+  if (!menu) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 text-lg">No se encontró información del menú</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Lista de Compras</h1>
-          <p className="text-gray-600">Todo lo que necesitas para tu semana</p>
-          {userId && (
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Lista de Compras</h1>
+          <div className="flex gap-4">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
             <Link
               to={`/menu/${userId}`}
-              className="inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Ver Menú Semanal
+              Volver al Menú
             </Link>
-          )}
+          </div>
         </div>
-        <div className="space-y-3">
-          {menu.lista_compras.map((item, index) => (
-            <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-              <input
-                type="checkbox"
-                id={`item-${index}`}
-                className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor={`item-${index}`} className="text-gray-700 flex-1">
-                {item}
-              </label>
-            </div>
-          ))}
+
+        {saveSuccess && (
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
+            Cambios guardados exitosamente
+          </div>
+        )}
+
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <ul className="space-y-2">
+            {menu.lista_compras.map((item, index) => (
+              <li 
+                key={index} 
+                className={`flex items-center space-x-2 p-2 rounded-lg transition-colors ${
+                  itemsComprados.has(index) ? 'bg-green-50' : ''
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={itemsComprados.has(index)}
+                  onChange={() => handleItemToggle(index)}
+                  className="h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className={`text-gray-700 ${
+                  itemsComprados.has(index) ? 'line-through text-gray-500' : ''
+                }`}>
+                  {item}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
