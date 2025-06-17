@@ -36,16 +36,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.api = void 0;
+exports.api = exports.usuarios = void 0;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const dotenv_1 = __importDefault(require("dotenv"));
 const functions = __importStar(require("firebase-functions"));
+const logging_1 = require("./middleware/logging");
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
+dotenv_1.default.config();
 const app = (0, express_1.default)();
+const port = process.env.PORT || 3000;
+// Configuración de CORS
+app.use((0, cors_1.default)({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 // Middleware
-app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+app.use(logging_1.requestLogger);
+// Almacenamiento temporal en memoria
+exports.usuarios = {};
 // Rutas
 app.use('/api/users', userRoutes_1.default);
+// Endpoint de prueba
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'Backend funcionando correctamente' });
+});
+// Iniciar servidor local si no estamos en producción
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => {
+        console.log(`Servidor corriendo en http://localhost:${port}`);
+    });
+}
 // Exportar la función de Cloud Functions
 exports.api = functions.https.onRequest(app);

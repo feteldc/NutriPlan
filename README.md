@@ -29,7 +29,7 @@ NutriPlan es una aplicación web que genera planes de alimentación personalizad
 nutriplan/
 ├── frontend/           # Aplicación React + Vite
 │   ├── src/           # Código fuente del frontend
-│   ├── public/        # Archivos
+│   ├── public/        # Archivos estáticos
 │   └── package.json   # Dependencias del frontend
 │
 └── backend/           # Servidor Express
@@ -64,6 +64,18 @@ nutriplan/
   }
 }
 ```
+
+## Uso de IA en el Proyecto
+
+La IA (Google Gemini) se utiliza para:
+1. Generar menús personalizados basados en:
+   - Objetivo del usuario (perder peso, mantener, ganar masa)
+   - Edad y peso
+   - Alergias y restricciones alimentarias
+2. Asegurar que los menús sean:
+   - Balanceados nutricionalmente
+   - Adaptados al objetivo del usuario
+   - Libres de alimentos alérgenos
 
 ## Instalación y Ejecución
 
