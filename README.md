@@ -6,20 +6,36 @@ NutriPlan es una aplicación web que genera planes de alimentación personalizad
 ## Tecnologías Utilizadas
 
 ### Frontend
-- React + Vite
-- TypeScript
-- TailwindCSS
-- React Router DOM
-- HeadlessUI
+- React 18.2.0
+- Vite 5.1.6
+- TypeScript 5.2.2
+- TailwindCSS 3.4.1
+- React Router DOM 6.22.3
+- Firebase 11.9.1
 
 ### Backend
 - Node.js
-- Express
-- TypeScript
-- Google Gemini AI
+- Express 4.18.3
+- Firebase Admin SDK 12.0.0
+- CORS 2.8.5
+- dotenv 16.4.5
 
 ### Base de Datos
 - Firebase Firestore
+
+## Estructura del Proyecto
+
+```
+nutriplan/
+├── frontend/           # Aplicación React + Vite
+│   ├── src/           # Código fuente del frontend
+│   ├── public/        # Archivos estáticos
+│   └── package.json   # Dependencias del frontend
+│
+└── backend/           # Servidor Express
+    ├── src/          # Código fuente del backend
+    └── package.json  # Dependencias del backend
+```
 
 ## Estructura de la Base de Datos
 
@@ -83,11 +99,6 @@ npm install
 npm run dev
 ```
 
-4. Configurar Firebase:
-   - Crear proyecto en Firebase Console
-   - Obtener credenciales de servicio
-   - Configurar variables de entorno en backend/.env
-
 ## Variables de Entorno
 
 ### Backend (.env)
@@ -96,8 +107,19 @@ PORT=3000
 FIREBASE_PROJECT_ID=tu-proyecto-id
 FIREBASE_PRIVATE_KEY=tu-private-key
 FIREBASE_CLIENT_EMAIL=tu-client-email
-GEMINI_API_KEY=tu-gemini-api-key
 ```
+
+## Scripts Disponibles
+
+### Frontend
+- `npm run dev`: Inicia el servidor de desarrollo
+- `npm run build`: Compila el proyecto para producción
+- `npm run preview`: Vista previa de la versión de producción
+- `npm run lint`: Ejecuta el linter
+
+### Backend
+- `npm run dev`: Inicia el servidor en modo desarrollo
+- `npm start`: Inicia el servidor en modo producción
 
 ## API Endpoints
 
