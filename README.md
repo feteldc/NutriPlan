@@ -29,7 +29,7 @@ NutriPlan es una aplicación web que genera planes de alimentación personalizad
 nutriplan/
 ├── frontend/           # Aplicación React + Vite
 │   ├── src/           # Código fuente del frontend
-│   ├── public/        # Archivos estáticos
+│   ├── public/        # Archivos
 │   └── package.json   # Dependencias del frontend
 │
 └── backend/           # Servidor Express
