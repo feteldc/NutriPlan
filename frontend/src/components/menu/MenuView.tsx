@@ -2,18 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
-import type { MenuResponse } from '../../types/menu';
-
-interface Comidas {
-  desayuno: string;
-  almuerzo: string;
-  cena: string;
-  snacks?: string;
-}
-
-interface Menu {
-  [key: string]: Comidas;
-}
+import type { MenuResponse, Menu } from '../../types/menu';
 
 export const MenuSemanalView = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -115,7 +104,7 @@ export const MenuSemanalView = () => {
         {/* Menú Semanal */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {dias.map((dia) => {
-            const comidasDelDia = menu.menu[dia];
+            const comidasDelDia = menu.menu[dia as keyof Menu];
             if (!comidasDelDia) return null;
             return (
               <div key={dia} className="bg-white rounded-xl shadow p-4 flex flex-col">
