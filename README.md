@@ -65,18 +65,6 @@ nutriplan/
 }
 ```
 
-## Uso de IA en el Proyecto
-
-La IA (Google Gemini) se utiliza para:
-1. Generar menús personalizados basados en:
-   - Objetivo del usuario (perder peso, mantener, ganar masa)
-   - Edad y peso
-   - Alergias y restricciones alimentarias
-2. Asegurar que los menús sean:
-   - Balanceados nutricionalmente
-   - Adaptados al objetivo del usuario
-   - Libres de alimentos alérgenos
-
 ## Instalación y Ejecución
 
 1. Clonar el repositorio:
