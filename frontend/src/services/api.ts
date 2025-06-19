@@ -302,36 +302,29 @@ export const api = {
       }
 
       const userData = userDoc.data();
-      // Normalizar el objetivo para que coincida con las claves del objeto
-      const objetivoNormalizado = userData.objetivo === 'perder peso' ? 'perder' : 
-                                userData.objetivo === 'ganar masa' ? 'ganar' : 
-                                'mantener';
       
-      const alergias = userData.alergias || '';
-      
-      // Obtener menú y lista de compras base según el objetivo
-      let menu = menusPorObjetivo[objetivoNormalizado];
-      let lista_compras = listasComprasPorObjetivo[objetivoNormalizado];
+      // Llamar a la API del backend para generar el menú
+      const response = await fetch(`http://localhost:3000/api/generarMenu/${data.userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
 
-      // Verificar que tenemos un menú válido
-      if (!menu) {
-        throw new Error('No se pudo generar el menú para el objetivo especificado');
+      if (!response.ok) {
+        throw new Error('Error al generar el menú');
       }
 
-      // Si hay alergias, ajustar el menú y la lista de compras
-      if (alergias) {
-        menu = reemplazarAlimentosPorAlergia(menu, alergias);
-        lista_compras = ajustarListaComprasPorAlergia(lista_compras, alergias);
-      }
+      const { menu } = await response.json();
 
-      // Asegurarnos de que tenemos datos válidos antes de actualizar
-      const updateData = {
-        menu: menu || {},
-        lista_compras: lista_compras || []
-      };
+      // Generar lista de compras basada en el menú
+      const lista_compras = generarListaCompras(menu);
 
-      // Actualizar el documento con el menú personalizado
-      await updateDoc(doc(db, 'usuarios', data.userId), updateData);
+      // Actualizar el documento con el menú y la lista de compras
+      await updateDoc(doc(db, 'usuarios', data.userId), {
+        menu,
+        lista_compras
+      });
 
       return {
         menu,
@@ -342,4 +335,26 @@ export const api = {
       throw error;
     }
   }
+};
+
+// Función auxiliar para generar la lista de compras basada en el menú
+const generarListaCompras = (menu: Menu): string[] => {
+  const ingredientes = new Set<string>();
+  
+  // Recorrer el menú y extraer ingredientes
+  Object.values(menu).forEach(dia => {
+    Object.values(dia).forEach(comida => {
+      if (typeof comida === 'string') {
+        // Dividir la comida en palabras y agregar ingredientes principales
+        const palabras = comida.toLowerCase().split(/[\s,]+/);
+        palabras.forEach(palabra => {
+          if (palabra.length > 3 && !palabra.match(/^(con|para|y|o|de|la|el|los|las)$/)) {
+            ingredientes.add(palabra);
+          }
+        });
+      }
+    });
+  });
+
+  return Array.from(ingredientes);
 }; 
