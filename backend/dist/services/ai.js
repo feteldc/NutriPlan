@@ -34,7 +34,7 @@ export const generarMenuSemanal = async (datosUsuario) => {
             return menuCache.get(cacheKey);
         }
         console.log('Generando nuevo menú con IA...');
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         // Prompt optimizado para minimizar tokens
         const prompt = `Menu semanal JSON: ${datosUsuario.edad}a, ${datosUsuario.objetivo}, alergias:${datosUsuario.alergias || 'ninguna'}. Formato:{"lunes":{"d":"","a":"","c":"","s":[]}}`;
         console.log('Enviando prompt a la API...');
