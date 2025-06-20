@@ -4,6 +4,17 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import type { MenuResponse } from '../../types/menu';
 
+interface Comidas {
+  desayuno: string;
+  almuerzo: string;
+  cena: string;
+  snacks?: string;
+}
+
+interface Menu {
+  [key: string]: Comidas;
+}
+
 export const MenuSemanalView = () => {
   const { userId } = useParams<{ userId: string }>();
   const [menu, setMenu] = useState<MenuResponse | null>(null);
@@ -453,7 +464,7 @@ export const ListaComprasView = () => {
             </div>
           ) : (
             <ul className="space-y-2">
-              {filteredItems.map((item) => {
+              {filteredItems.map((item, index) => {
                 const originalIndex = menu.lista_compras.indexOf(item);
                 return (
                   <li 
