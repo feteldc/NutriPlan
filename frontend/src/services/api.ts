@@ -3,6 +3,8 @@ import { db } from '../config/firebase';
 import type { UserFormData } from '../types/user';
 import type { MenuResponse, Menu, Comidas } from '../types/menu';
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 export const api = {
   async guardarUsuario(data: UserFormData) {
     try {
@@ -26,7 +28,7 @@ export const api = {
       }
 
       // Llamar a la API del backend para generar el menú
-      const response = await fetch(`http://localhost:3000/api/generarMenu/${data.userId}`, {
+      const response = await fetch(`${API_URL}/api/generarMenu/${data.userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
