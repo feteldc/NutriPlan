@@ -1,5 +1,5 @@
 # NutriPlan - Planificador de Comidas con IA
-
+Enlace: https://nutri-plan-frontend.vercel.app/
 ## Descripción
 NutriPlan es una aplicación web que genera planes de alimentación personalizados utilizando inteligencia artificial. Analiza las necesidades específicas del usuario (edad, peso, objetivo y alergias) para crear un menú semanal balanceado y adaptado a sus requerimientos.
 
