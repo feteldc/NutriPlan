@@ -6,6 +6,7 @@ export interface Comidas {
 }
 
 export interface Menu {
+  [key: string]: Comidas;
   lunes: Comidas;
   martes: Comidas;
   miércoles: Comidas;

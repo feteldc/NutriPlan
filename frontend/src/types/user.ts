@@ -1,4 +1,6 @@
 export type Objetivo = 'perder peso' | 'mantener' | 'ganar masa';
+export type NivelActividad = 'sedentario' | 'ligero' | 'moderado' | 'activo' | 'muy-activo';
+export type HorarioComida = 'normal' | 'intermitente' | 'frecuente';
 
 export interface UserFormData {
   nombre: string;
@@ -6,6 +8,9 @@ export interface UserFormData {
   peso: number;
   objetivo: Objetivo;
   alergias: string;
+  nivelActividad: NivelActividad;
+  preferenciasDieteticas: string[];
+  horarioComida: HorarioComida;
 }
 
 export interface UserFormErrors {
@@ -14,4 +19,7 @@ export interface UserFormErrors {
   peso?: string;
   objetivo?: string;
   alergias?: string;
+  nivelActividad?: string;
+  preferenciasDieteticas?: string;
+  horarioComida?: string;
 } 
