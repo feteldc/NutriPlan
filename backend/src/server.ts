@@ -8,8 +8,16 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+const allowedOrigins = [
+  'https://nutri-plan-frontend.vercel.app', // dominio de Vercel
+  'http://localhost:5173' // desarrollo local
+];
+
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 app.use(express.json());
 
 // Rutas
