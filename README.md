@@ -96,7 +96,8 @@ npm run dev
 cd backend
 npm install
 # Crear archivo .env con las variables de entorno necesarias
-npm run dev
+npm run build
+npm run star
 ```
 
 ## Variables de Entorno

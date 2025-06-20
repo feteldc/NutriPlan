@@ -4,7 +4,16 @@ import { generarMenuSemanal } from '../services/ai.js';
 
 export const guardarUsuario = async (req: Request, res: Response) => {
   try {
-    const { nombre, edad, peso, objetivo, alergias } = req.body;
+    const { 
+      nombre, 
+      edad, 
+      peso, 
+      objetivo, 
+      alergias, 
+      nivelActividad, 
+      preferenciasDieteticas, 
+      horarioComida 
+    } = req.body;
 
     // Validar datos requeridos
     if (!nombre || !edad || !peso || !objetivo) {
@@ -26,6 +35,9 @@ export const guardarUsuario = async (req: Request, res: Response) => {
       peso,
       objetivo,
       alergias: alergias || '',
+      nivelActividad: nivelActividad || 'moderado',
+      preferenciasDieteticas: preferenciasDieteticas || [],
+      horarioComida: horarioComida || 'normal',
       fechaCreacion: new Date()
     });
 
@@ -70,7 +82,10 @@ export const generarMenu = async (req: Request, res: Response) => {
     const menu = await generarMenuSemanal({
       edad: userData.edad,
       objetivo: userData.objetivo,
-      alergias: userData.alergias
+      alergias: userData.alergias,
+      nivelActividad: userData.nivelActividad,
+      preferenciasDieteticas: userData.preferenciasDieteticas,
+      horarioComida: userData.horarioComida
     });
 
     // Guardar el menú en Firestore

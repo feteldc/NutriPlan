@@ -10,7 +10,10 @@ export const UserForm = () => {
     edad: 0,
     peso: 0,
     objetivo: 'mantener',
-    alergias: ''
+    alergias: '',
+    nivelActividad: 'moderado',
+    preferenciasDieteticas: [],
+    horarioComida: 'normal'
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -48,14 +51,23 @@ export const UserForm = () => {
     }));
   };
 
+  const handlePreferenciaChange = (preferencia: string) => {
+    setFormData(prev => ({
+      ...prev,
+      preferenciasDieteticas: prev.preferenciasDieteticas.includes(preferencia)
+        ? prev.preferenciasDieteticas.filter(p => p !== preferencia)
+        : [...prev.preferenciasDieteticas, preferencia]
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-2xl p-8">
+      <div className="max-w-2xl w-full bg-white rounded-xl shadow-2xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">
             NutriPlan
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-lg">
             Tu Planificador de Comidas Personalizado
           </p>
         </div>
@@ -67,79 +79,141 @@ export const UserForm = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre
-            </label>
-            <input
-              type="text"
-              id="nombre"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-              placeholder="Tu nombre"
-            />
+          {/* Información básica */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
+                Nombre
+              </label>
+              <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                value={formData.nombre}
+                onChange={handleChange}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+                placeholder="Tu nombre"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="edad" className="block text-sm font-medium text-gray-700 mb-1">
+                Edad
+              </label>
+              <input
+                type="number"
+                id="edad"
+                name="edad"
+                value={formData.edad || ''}
+                onChange={handleChange}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+                min="1"
+                max="120"
+                placeholder="Tu edad"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="peso" className="block text-sm font-medium text-gray-700 mb-1">
+                Peso (kg)
+              </label>
+              <input
+                type="number"
+                id="peso"
+                name="peso"
+                value={formData.peso || ''}
+                onChange={handleChange}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+                min="20"
+                max="300"
+                placeholder="Tu peso en kilogramos"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="objetivo" className="block text-sm font-medium text-gray-700 mb-1">
+                Objetivo
+              </label>
+              <select
+                id="objetivo"
+                name="objetivo"
+                value={formData.objetivo}
+                onChange={handleChange}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              >
+                <option value="perder peso">Perder peso</option>
+                <option value="mantener">Mantener peso</option>
+                <option value="ganar masa">Ganar masa</option>
+              </select>
+            </div>
           </div>
 
+          {/* Nivel de actividad */}
           <div>
-            <label htmlFor="edad" className="block text-sm font-medium text-gray-700 mb-1">
-              Edad
-            </label>
-            <input
-              type="number"
-              id="edad"
-              name="edad"
-              value={formData.edad || ''}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-              min="1"
-              max="120"
-              placeholder="Tu edad"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="peso" className="block text-sm font-medium text-gray-700 mb-1">
-              Peso (kg)
-            </label>
-            <input
-              type="number"
-              id="peso"
-              name="peso"
-              value={formData.peso || ''}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-              min="20"
-              max="300"
-              placeholder="Tu peso en kilogramos"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="objetivo" className="block text-sm font-medium text-gray-700 mb-1">
-              Objetivo
+            <label htmlFor="nivelActividad" className="block text-sm font-medium text-gray-700 mb-1">
+              Nivel de Actividad Física
             </label>
             <select
-              id="objetivo"
-              name="objetivo"
-              value={formData.objetivo}
+              id="nivelActividad"
+              name="nivelActividad"
+              value={formData.nivelActividad}
               onChange={handleChange}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
             >
-              <option value="perder peso">Perder peso</option>
-              <option value="mantener">Mantener peso</option>
-              <option value="ganar masa">Ganar masa</option>
+              <option value="sedentario">Sedentario (poco ejercicio)</option>
+              <option value="ligero">Ligero (1-3 días/semana)</option>
+              <option value="moderado">Moderado (3-5 días/semana)</option>
+              <option value="activo">Activo (6-7 días/semana)</option>
+              <option value="muy-activo">Muy activo (ejercicio intenso diario)</option>
             </select>
           </div>
 
+          {/* Preferencias dietéticas */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Preferencias Dietéticas
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {['Vegetariano', 'Vegano', 'Sin gluten', 'Bajo en carbohidratos', 'Alto en proteínas', 'Sin lactosa'].map(preferencia => (
+                <label key={preferencia} className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.preferenciasDieteticas.includes(preferencia)}
+                    onChange={() => handlePreferenciaChange(preferencia)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">{preferencia}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Horario de comida */}
+          <div>
+            <label htmlFor="horarioComida" className="block text-sm font-medium text-gray-700 mb-1">
+              Horario de Comida Preferido
+            </label>
+            <select
+              id="horarioComida"
+              name="horarioComida"
+              value={formData.horarioComida}
+              onChange={handleChange}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+              <option value="normal">Normal (desayuno, almuerzo, cena)</option>
+              <option value="intermitente">Ayuno intermitente</option>
+              <option value="frecuente">Comidas frecuentes (5-6 al día)</option>
+            </select>
+          </div>
+
+          {/* Alergias */}
           <div>
             <label htmlFor="alergias" className="block text-sm font-medium text-gray-700 mb-1">
-              Alergias (opcional)
+              Alergias e Intolerancias (opcional)
             </label>
             <textarea
               id="alergias"
@@ -148,14 +222,14 @@ export const UserForm = () => {
               onChange={handleChange}
               rows={3}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              placeholder="Lista tus alergias separadas por comas"
+              placeholder="Lista tus alergias o intolerancias separadas por comas"
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
@@ -163,10 +237,10 @@ export const UserForm = () => {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Generando plan...
+                Generando plan personalizado...
               </span>
             ) : (
-              'Generar Plan de Comidas'
+              'Generar Plan de Comidas Personalizado'
             )}
           </button>
         </form>

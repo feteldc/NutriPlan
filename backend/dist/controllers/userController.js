@@ -2,7 +2,7 @@ import { db } from '../config/firebase.js';
 import { generarMenuSemanal } from '../services/ai.js';
 export const guardarUsuario = async (req, res) => {
     try {
-        const { nombre, edad, peso, objetivo, alergias } = req.body;
+        const { nombre, edad, peso, objetivo, alergias, nivelActividad, preferenciasDieteticas, horarioComida } = req.body;
         // Validar datos requeridos
         if (!nombre || !edad || !peso || !objetivo) {
             res.status(400).json({ error: 'Faltan campos requeridos' });
@@ -21,6 +21,9 @@ export const guardarUsuario = async (req, res) => {
             peso,
             objetivo,
             alergias: alergias || '',
+            nivelActividad: nivelActividad || 'moderado',
+            preferenciasDieteticas: preferenciasDieteticas || [],
+            horarioComida: horarioComida || 'normal',
             fechaCreacion: new Date()
         });
         res.status(201).json({
@@ -58,7 +61,10 @@ export const generarMenu = async (req, res) => {
         const menu = await generarMenuSemanal({
             edad: userData.edad,
             objetivo: userData.objetivo,
-            alergias: userData.alergias
+            alergias: userData.alergias,
+            nivelActividad: userData.nivelActividad,
+            preferenciasDieteticas: userData.preferenciasDieteticas,
+            horarioComida: userData.horarioComida
         });
         // Guardar el menú en Firestore
         await userDoc.ref.update({

@@ -3,13 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-if (!process.env.GEMINI_API_KEY) {
-  console.error('Error: GEMINI_API_KEY no está configurada en las variables de entorno');
-  process.exit(1);
-}
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
 interface Comidas {
   d?: string;
   a?: string;
@@ -18,7 +11,7 @@ interface Comidas {
   desayuno?: string;
   almuerzo?: string;
   cena?: string;
-  snacks?: string[];
+  snacks?: string;
 }
 
 interface Menu {
@@ -28,19 +21,51 @@ interface Menu {
 // Cache para almacenar menús generados
 const menuCache = new Map<string, Menu>();
 
+// Función para normalizar nombres de días
+const normalizarDia = (dia: string): string => {
+  const normalizaciones: { [key: string]: string } = {
+    'miercoles': 'miércoles',
+    'sabado': 'sábado'
+  };
+  return normalizaciones[dia] || dia;
+};
+
 const validarFormatoMenu = (menu: Menu): boolean => {
-  const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
-  const comidas = ['desayuno', 'almuerzo', 'cena', 'snacks'];
+  const diasEsperados = ['lunes', 'martes', 'miercoles', 'miércoles', 'jueves', 'viernes', 'sabado', 'sábado', 'domingo'];
 
   try {
-    for (const dia of dias) {
-      if (!menu[dia]) return false;
-      for (const comida of comidas) {
-        if (!menu[dia][comida as keyof Comidas]) return false;
+    // Verificar que tengamos al menos 7 días
+    const diasEncontrados = Object.keys(menu);
+    if (diasEncontrados.length < 7) {
+      console.error(`Solo se encontraron ${diasEncontrados.length} días:`, diasEncontrados);
+      return false;
+    }
+
+    // Verificar que tengamos los días básicos (con o sin acentos)
+    const diasBasicos = ['lunes', 'martes', 'jueves', 'viernes', 'domingo'];
+    for (const dia of diasBasicos) {
+      if (!diasEncontrados.includes(dia)) {
+        console.error(`Falta el día: ${dia}`);
+        return false;
       }
     }
+
+    // Verificar que tengamos al menos una versión de miércoles y sábado
+    const tieneMiercoles = diasEncontrados.includes('miercoles') || diasEncontrados.includes('miércoles');
+    const tieneSabado = diasEncontrados.includes('sabado') || diasEncontrados.includes('sábado');
+
+    if (!tieneMiercoles) {
+      console.error('Falta miércoles/miercoles');
+      return false;
+    }
+    if (!tieneSabado) {
+      console.error('Falta sábado/sabado');
+      return false;
+    }
+
     return true;
   } catch (error) {
+    console.error('Error en validación:', error);
     return false;
   }
 };
@@ -49,8 +74,17 @@ export const generarMenuSemanal = async (datosUsuario: {
   edad: number;
   objetivo: string;
   alergias: string;
+  nivelActividad?: string;
+  preferenciasDieteticas?: string[];
+  horarioComida?: string;
 }) => {
+  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'TU_API_KEY_DE_GEMINI') {
+    console.error('Error: La clave de API de Gemini no está configurada en el servidor.');
+    throw new Error('El servicio de IA no está configurado. Por favor, contacta al administrador.');
+  }
+
   try {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const cacheKey = `${datosUsuario.edad}-${datosUsuario.objetivo}-${datosUsuario.alergias}`;
     
     if (menuCache.has(cacheKey)) {
@@ -61,8 +95,32 @@ export const generarMenuSemanal = async (datosUsuario: {
     console.log('Generando nuevo menú con IA...');
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    // Prompt optimizado para minimizar tokens
-    const prompt = `Menu semanal JSON: ${datosUsuario.edad}a, ${datosUsuario.objetivo}, alergias:${datosUsuario.alergias || 'ninguna'}. Formato:{"lunes":{"d":"","a":"","c":"","s":[]}}`;
+    // Prompt optimizado para incluir toda la información personalizada
+    const prompt = `Genera un menú semanal personalizado en formato JSON para una persona de ${datosUsuario.edad} años con objetivo de ${datosUsuario.objetivo}.
+
+Información adicional:
+- Nivel de actividad: ${datosUsuario.nivelActividad || 'moderado'}
+- Preferencias dietéticas: ${datosUsuario.preferenciasDieteticas?.join(', ') || 'ninguna'}
+- Horario de comida: ${datosUsuario.horarioComida || 'normal'}
+- Alergias: ${datosUsuario.alergias || 'ninguna'}
+
+Formato requerido:
+{
+  "lunes": {
+    "d": "Desayuno detallado",
+    "a": "Almuerzo detallado", 
+    "c": "Cena detallada",
+    "s": ["Snack 1", "Snack 2"]
+  },
+  "martes": { ... },
+  "miércoles": { ... },
+  "jueves": { ... },
+  "viernes": { ... },
+  "sábado": { ... },
+  "domingo": { ... }
+}
+
+Considera las preferencias dietéticas y alergias al generar las comidas. Incluye snacks saludables apropiados para el objetivo.`;
 
     console.log('Enviando prompt a la API...');
     const result = await model.generateContent(prompt);
@@ -72,21 +130,78 @@ export const generarMenuSemanal = async (datosUsuario: {
     console.log('Respuesta recibida de la API');
     
     try {
-      const menu = JSON.parse(text) as Menu;
+      // Limpiar la respuesta para extraer solo el JSON
+      let jsonText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      
+      // Buscar el inicio y fin del JSON válido
+      const jsonStart = jsonText.indexOf('{');
+      const jsonEnd = jsonText.lastIndexOf('}') + 1;
+      
+      if (jsonStart !== -1 && jsonEnd > jsonStart) {
+        jsonText = jsonText.substring(jsonStart, jsonEnd);
+      }
+      
+      const menu = JSON.parse(jsonText) as Menu;
       
       // Normalizar las claves del menú
       const menuNormalizado = Object.entries(menu).reduce((acc: Menu, [dia, comidas]) => {
-        acc[dia] = {
+        // Generar snacks automáticamente si no los hay
+        let snacks = '';
+        if (Array.isArray(comidas.s) && comidas.s.length > 0) {
+          snacks = comidas.s.join(', ');
+        } else if (comidas.snacks && comidas.snacks.trim() !== '') {
+          snacks = comidas.snacks;
+        } else {
+          // Snacks por defecto según el objetivo
+          const snacksPorObjetivo = {
+            'perder peso': [
+              'Fruta fresca (manzana, pera, naranja)',
+              'Yogur griego bajo en grasa',
+              'Vegetales crudos (zanahoria, apio, pepino)',
+              'Té verde sin azúcar',
+              'Un puñado de almendras (10-12 unidades)',
+              'Agua con limón',
+              'Gelatina sin azúcar'
+            ],
+            'mantener': [
+              'Fruta fresca variada',
+              'Yogur griego con miel',
+              'Un puñado de frutos secos mixtos',
+              'Queso fresco bajo en grasa',
+              'Batido de proteína con agua',
+              'Té verde o infusiones',
+              'Galletas integrales (2-3 unidades)'
+            ],
+            'ganar masa': [
+              'Batido de proteína con leche y plátano',
+              'Yogur griego con granola y miel',
+              'Un puñado de frutos secos (almendras, nueces)',
+              'Queso cottage con fruta',
+              'Pan integral con mantequilla de maní',
+              'Leche con cacao en polvo',
+              'Barra de proteína'
+            ]
+          };
+          
+          const objetivo = datosUsuario.objetivo === 'perder peso' ? 'perder peso' : 
+                          datosUsuario.objetivo === 'ganar masa' ? 'ganar masa' : 'mantener';
+          
+          const snacksDisponibles = snacksPorObjetivo[objetivo] || snacksPorObjetivo.mantener;
+          snacks = snacksDisponibles[Math.floor(Math.random() * snacksDisponibles.length)];
+        }
+
+        acc[normalizarDia(dia)] = {
           desayuno: comidas.d || comidas.desayuno || '',
           almuerzo: comidas.a || comidas.almuerzo || '',
           cena: comidas.c || comidas.cena || '',
-          snacks: comidas.s || comidas.snacks || []
+          snacks: snacks
         };
         return acc;
       }, {});
 
       if (!validarFormatoMenu(menuNormalizado)) {
         console.error('El menú generado no tiene el formato correcto');
+        console.error('Menú normalizado:', JSON.stringify(menuNormalizado, null, 2));
         throw new Error('Formato de menú inválido');
       }
 
