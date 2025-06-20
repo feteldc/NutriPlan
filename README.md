@@ -3,6 +3,10 @@ Enlace: https://nutri-plan-frontend.vercel.app/
 ## Descripción
 NutriPlan es una aplicación web que genera planes de alimentación personalizados utilizando inteligencia artificial. Analiza las necesidades específicas del usuario (edad, peso, objetivo y alergias) para crear un menú semanal balanceado y adaptado a sus requerimientos.
 
+## Integrantes
+-Fernando Catalán: Creación de repositorio y desarrollo de funcionalidades de generación de menú y lista de compras.
+-Sergio Martínez: Desarrollo de funcionalidades de hosting, conexión a API y despliegue.
+
 ## Tecnologías Utilizadas
 
 ### Frontend
