@@ -1,24 +1,24 @@
 # NutriPlan - Planificador de Comidas con IA
 
 ## Descripción
-NutriPlan es una aplicación web que genera planes de alimentación personalizados utilizando inteligencia artificial. La aplicación analiza las necesidades específicas del usuario (edad, peso, objetivo y alergias) para crear un menú semanal balanceado y adaptado a sus requerimientos.
+NutriPlan es una aplicación web que genera planes de alimentación personalizados utilizando inteligencia artificial. Analiza las necesidades específicas del usuario (edad, peso, objetivo y alergias) para crear un menú semanal balanceado y adaptado a sus requerimientos.
 
 ## Tecnologías Utilizadas
 
 ### Frontend
-- React 18.2.0
+- React 18.2.0 (TypeScript)
 - Vite 5.1.6
-- TypeScript 5.2.2
 - TailwindCSS 3.4.1
 - React Router DOM 6.22.3
 - Firebase 11.9.1
 
 ### Backend
 - Node.js
-- Express 4.18.3
+- Express 4.18.3 (TypeScript)
 - Firebase Admin SDK 12.0.0
 - CORS 2.8.5
 - dotenv 16.4.5
+- @google/generative-ai 0.2.1
 
 ### Base de Datos
 - Firebase Firestore
@@ -28,12 +28,23 @@ NutriPlan es una aplicación web que genera planes de alimentación personalizad
 ```
 nutriplan/
 ├── frontend/           # Aplicación React + Vite
-│   ├── src/           # Código fuente del frontend
+│   ├── src/
+│   │   ├── components/     # Componentes de React (forms, menu)
+│   │   ├── services/       # Servicios de API y Firebase
+│   │   ├── types/          # Tipos TypeScript
+│   │   ├── utils/          # Funciones utilitarias
+│   │   ├── config/         # Configuración de Firebase
+│   │   └── routes/         # Rutas de la app
 │   ├── public/        # Archivos estáticos
 │   └── package.json   # Dependencias del frontend
 │
 └── backend/           # Servidor Express
-    ├── src/          # Código fuente del backend
+    ├── src/
+    │   ├── controllers/    # Controladores (lógica de usuario)
+    │   ├── routes/         # Definición de rutas
+    │   ├── services/       # Lógica de IA y otros servicios
+    │   ├── config/         # Configuración de Firebase
+    │   └── server.ts       # Entrada principal del servidor
     └── package.json  # Dependencias del backend
 ```
 
@@ -57,7 +68,7 @@ nutriplan/
           "almuerzo": "string",
           "cena": "string",
           "snacks": ["string"]
-        },
+        }
         // ... resto de los días
       }
     }
@@ -97,7 +108,7 @@ cd backend
 npm install
 # Crear archivo .env con las variables de entorno necesarias
 npm run build
-npm run star
+npm start
 ```
 
 ## Variables de Entorno
@@ -125,10 +136,10 @@ FIREBASE_CLIENT_EMAIL=tu-client-email
 ## API Endpoints
 
 ### POST /api/guardarUsuario
-Guarda los datos del usuario en Firestore.
+Guarda los datos del usuario en Firestore. Espera un JSON con los datos personales y devuelve confirmación de guardado.
 
 ### POST /api/generarMenu/:userId
-Genera un menú personalizado usando IA y lo guarda en Firestore.
+Genera un menú personalizado usando IA para el usuario especificado y lo guarda en Firestore. Devuelve el menú generado.
 
 ## Contribución
 Este proyecto fue desarrollado como parte de una actividad evaluada de Inteligencia Artificial. 
